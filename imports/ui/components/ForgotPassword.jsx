@@ -1,29 +1,33 @@
 import React, { useState } from 'react';
-import { Meteor } from 'meteor/meteor';
+import { Accounts } from 'meteor/accounts-base';
 
-export const Login = ({ toggleForm }) => {
+export const ForgotPassword = ({ toggleToLogin }) => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    Meteor.loginWithPassword(email, password, (err) => {
+    setIsSubmitting(true);
+    setError('');
+    setMessage('');
+
+    Accounts.forgotPassword({ email }, (err) => {
+      setIsSubmitting(false);
       if (err) {
-        console.error("Login error", err);
-        setError(err.reason || 'Login failed');
+        console.error("Password reset error", err);
+        setError(err.reason || 'Failed to send reset email');
       } else {
+        setMessage('Password reset email sent. Please check your inbox.');
         setEmail('');
-        setPassword('');
-        setError('');
       }
     });
   };
 
   return (
     <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">Reset Password</h2>
       
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -31,10 +35,16 @@ export const Login = ({ toggleForm }) => {
         </div>
       )}
       
+      {message && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {message}
+        </div>
+      )}
+      
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
-            Email
+            Email Address
           </label>
           <input
             type="email"
@@ -46,46 +56,23 @@ export const Login = ({ toggleForm }) => {
           />
         </div>
         
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-gray-700 font-medium mb-2">
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        
-        <div className="mb-4 text-right">
-          <button
-            type="button"
-            onClick={() => toggleForm('forgotPassword')}
-            className="text-sm text-blue-500 hover:text-blue-700"
-          >
-            Forgot Password?
-          </button>
-        </div>
-        
         <button
           type="submit"
           className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
+          disabled={isSubmitting}
         >
-          Log In
+          {isSubmitting ? 'Sending...' : 'Send Reset Link'}
         </button>
       </form>
       
       <div className="mt-4 text-center">
         <p>
-          Don't have an account?{' '}
+          Remember your password?{' '}
           <button
-            onClick={() => toggleForm('signup')}
+            onClick={toggleToLogin}
             className="text-blue-500 hover:text-blue-700"
           >
-            Sign Up
+            Back to Login
           </button>
         </p>
       </div>

@@ -36,7 +36,13 @@ meteor npm install react-router-dom
 # Additional packages
 meteor add jquery
 meteor npm install tailwindcss postcss autoprefixer
+
+meteor add email
 ```
+
+# To run the app with settings
+#run the app
+meteor run --settings ../settings.json
 
 ## Project Structure
 

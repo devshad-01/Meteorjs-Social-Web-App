@@ -95,7 +95,7 @@ export const Signup = ({ toggleForm }) => {
         <p>
           Already have an account?{' '}
           <button
-            onClick={toggleForm}
+            onClick={() => toggleForm('login')}
             className="text-blue-500 hover:text-blue-700"
           >
             Log In
