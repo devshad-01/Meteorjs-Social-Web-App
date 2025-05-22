@@ -38,6 +38,8 @@ meteor add jquery
 meteor npm install tailwindcss postcss autoprefixer
 
 meteor add email
+
+meteor npm install --save react-router@6.22.1 react-router-dom@6.22.1
 ```
 
 # To run the app with settings
