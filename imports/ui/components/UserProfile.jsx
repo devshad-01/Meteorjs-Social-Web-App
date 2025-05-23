@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
+import { FiEdit2, FiUser, FiMail, FiCalendar, FiLogOut, FiCheck, FiX } from 'react-icons/fi';
 
 export const UserProfile = () => {
   const user = useTracker(() => Meteor.user());
@@ -54,117 +55,157 @@ export const UserProfile = () => {
   if (!user) return null;
 
   return (
-    <div className="max-w-2xl mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Profile</h2>
-        {!isEditing && (
-          <button
-            onClick={handleEditProfile}
-            className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
-          >
-            Edit Profile
-          </button>
-        )}
-      </div>
-
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-          {success}
-        </div>
-      )}
-
-      <div className="flex items-start space-x-6 mb-6">
-        <img
-          src={user.profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.emails[0].address)}&background=random`}
-          alt="Profile"
-          className="w-24 h-24 rounded-full"
-        />
-        
-        {isEditing ? (
-          <form onSubmit={handleSaveProfile} className="flex-1">
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
-                Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+    <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6">
+      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        {/* Profile Header */}
+        <div className="bg-gradient-to-r from-primary-600 to-primary-800 px-4 py-6 sm:p-8 text-white">
+          <div className="sm:flex sm:items-center sm:justify-between">
+            <div className="flex items-center mb-4 sm:mb-0">
+              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-white p-1 mr-4 sm:mr-6 shadow-lg">
+                <img
+                  src={user.profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.emails[0].address)}&background=random`}
+                  alt="Profile"
+                  className="w-full h-full rounded-full"
+                />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">{user.profile?.name || user.username || 'User'}</h2>
+                <p className="text-primary-100">{user.emails[0].address}</p>
+              </div>
             </div>
-
-            <div className="mb-4">
-              <label htmlFor="bio" className="block text-gray-700 font-medium mb-2">
-                Bio
-              </label>
-              <textarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows="4"
-              />
-            </div>
-
-            <div className="flex space-x-4">
+            {!isEditing && (
               <button
-                type="submit"
-                className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
+                onClick={handleEditProfile}
+                className="inline-flex items-center px-4 py-2 bg-white text-primary-700 rounded-lg font-medium shadow-sm hover:bg-primary-50 transition-colors"
               >
-                Save Changes
+                <FiEdit2 className="mr-2" /> Edit Profile
               </button>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                className="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition duration-200"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="flex-1">
-            <h3 className="text-xl font-semibold mb-2">{user.profile?.name || 'No name set'}</h3>
-            <p className="text-gray-600 mb-4">{user.profile?.bio || 'No bio added yet'}</p>
-            <p className="text-gray-700">
-              <strong>Email:</strong> {user.emails[0].address}
-              {!user.emails[0].verified && (
-                <>
-                  {' '}
-                  <span className="text-yellow-600">(Unverified)</span>
-                  <button
-                    onClick={sendVerificationEmail}
-                    className="ml-2 text-blue-500 hover:text-blue-700 text-sm"
-                  >
-                    Verify Now
-                  </button>
-                </>
-              )}
-            </p>
-            <p className="text-gray-700">
-              <strong>Member since:</strong>{' '}
-              {user.profile?.createdAt?.toLocaleDateString() || 'Unknown'}
-            </p>
+            )}
+          </div>
+        </div>
+
+        {/* Alerts */}
+        {error && (
+          <div className="mx-4 sm:mx-8 mt-4 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-md flex items-start">
+            <FiX className="mr-2 mt-0.5 flex-shrink-0" />
+            <p>{error}</p>
           </div>
         )}
-      </div>
 
-      <div className="border-t pt-6">
-        <button
-          onClick={handleLogout}
-          className="w-full bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200"
-        >
-          Log Out
-        </button>
+        {success && (
+          <div className="mx-4 sm:mx-8 mt-4 bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-md flex items-start">
+            <FiCheck className="mr-2 mt-0.5 flex-shrink-0" />
+            <p>{success}</p>
+          </div>
+        )}
+
+        {/* Profile Content */}
+        <div className="p-4 sm:p-8">
+          {isEditing ? (
+            <form onSubmit={handleSaveProfile} className="space-y-4">
+              <div>
+                <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="Your name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="bio" className="block text-gray-700 font-medium mb-2">
+                  Bio
+                </label>
+                <textarea
+                  id="bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  placeholder="Tell us about yourself"
+                  rows="4"
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div>
+              <div className="border-b pb-4 mb-4">
+                <h3 className="text-gray-700 font-medium mb-2">About</h3>
+                <p className="text-gray-600">{user.profile?.bio || 'No bio added yet'}</p>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="flex items-center text-gray-700">
+                  <FiUser className="mr-3 text-primary-500" />
+                  <div>
+                    <p className="text-sm font-medium">Username</p>
+                    <p>{user.username || 'Not set'}</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center text-gray-700">
+                  <FiMail className="mr-3 text-primary-500" />
+                  <div>
+                    <p className="text-sm font-medium">Email</p>
+                    <div className="flex items-center">
+                      <p>{user.emails[0].address}</p>
+                      {!user.emails[0].verified && (
+                        <div className="ml-2 flex items-center">
+                          <span className="text-yellow-600 text-sm">(Unverified)</span>
+                          <button
+                            onClick={sendVerificationEmail}
+                            className="ml-2 text-primary-600 hover:text-primary-800 text-sm underline"
+                          >
+                            Verify Now
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center text-gray-700">
+                  <FiCalendar className="mr-3 text-primary-500" />
+                  <div>
+                    <p className="text-sm font-medium">Member since</p>
+                    <p>{user.profile?.createdAt?.toLocaleDateString() || new Date(user.createdAt).toLocaleDateString() || 'Unknown'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Footer */}
+        <div className="border-t px-4 py-4 sm:px-8 sm:py-5">
+          <button
+            onClick={handleLogout}
+            className="w-full sm:w-auto flex items-center justify-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            <FiLogOut className="mr-2" /> Log Out
+          </button>
+        </div>
       </div>
     </div>
   );
