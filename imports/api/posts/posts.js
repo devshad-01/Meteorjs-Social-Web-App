@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo';
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
+import { extractHashtags, updateTagsCollection } from './tags';
 
 export const Posts = new Mongo.Collection('posts');
 
@@ -12,10 +13,44 @@ if (Meteor.isServer) {
       limit: 50
     });
   });
+  
+  // Publish posts by user
+  Meteor.publish('userPosts', function(userId) {
+    check(userId, String);
+    return Posts.find({ owner: userId }, {
+      sort: { createdAt: -1 },
+      limit: 20
+    });
+  });
+  
+  // Publish posts by search term
+  Meteor.publish('searchPosts', function(searchTerm) {
+    check(searchTerm, String);
+    
+    if (!searchTerm) {
+      return this.ready();
+    }
+    
+    const regex = new RegExp(searchTerm, 'i');
+    return Posts.find(
+      { 
+        $or: [
+          { text: regex },
+          { username: regex },
+          { tags: searchTerm.toLowerCase() }
+        ]
+      },
+      {
+        sort: { createdAt: -1 },
+        limit: 50
+      }
+    );
+  });
 
   Meteor.methods({
-    async 'posts.insert'(text) {
+    async 'posts.insert'(text, imageUrl = null) {
       check(text, String);
+      if (imageUrl) check(imageUrl, String);
       if (!this.userId) {
         throw new Meteor.Error('not-authorized', 'You must be logged in to create a post');
       }
@@ -26,16 +61,29 @@ if (Meteor.isServer) {
         }
         const username = user.username || user.profile?.name || (user.emails && user.emails[0]?.address) || 'Anonymous';
         
-        return await Posts.insertAsync({
+        // Extract hashtags
+        const tags = extractHashtags(text);
+        
+        // Insert post
+        const postId = await Posts.insertAsync({
           text,
+          imageUrl,
           createdAt: new Date(),
           owner: this.userId,
           username,
           likes: [],
           likeCount: 0,
           comments: [],
-          commentCount: 0
+          commentCount: 0,
+          tags: tags
         });
+        
+        // Update tags collection
+        if (tags.length > 0) {
+          await updateTagsCollection(tags);
+        }
+        
+        return postId;
       } catch (error) {
         console.error('Error in posts.insert method:', error);
         throw new Meteor.Error('internal-error', error.message || 'An error occurred while creating your post');
@@ -47,6 +95,12 @@ if (Meteor.isServer) {
       if (!this.userId || !post || post.owner !== this.userId) {
         throw new Meteor.Error('not-authorized', 'You can only remove your own posts');
       }
+      
+      // If post has tags, update the tags collection
+      if (post.tags && post.tags.length > 0) {
+        await updateTagsCollection(post.tags, false);
+      }
+      
       return await Posts.removeAsync(postId);
     },
     async 'posts.edit'(postId, newText) {

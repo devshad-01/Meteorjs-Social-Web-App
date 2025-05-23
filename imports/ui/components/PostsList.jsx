@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Posts } from '../../api/posts/posts';
-import { FiHeart, FiMessageSquare, FiShare2, FiMoreVertical } from 'react-icons/fi';
+import { FiHeart, FiMessageSquare, FiShare2, FiMoreVertical, FiImage, FiX } from 'react-icons/fi';
 
 const PostCard = ({ post, currentUser }) => {
   const [expanded, setExpanded] = useState(false);
@@ -96,6 +96,18 @@ const PostCard = ({ post, currentUser }) => {
         ) : (
           <p className="text-gray-800">{post.text}</p>
         )}
+        
+        {post.imageUrl && (
+          <div className="mt-3">
+            <img 
+              src={post.imageUrl} 
+              alt="Post image" 
+              className="max-w-full rounded-lg max-h-96 object-contain"
+              loading="lazy"
+            />
+          </div>
+        )}
+        
         {isLongText && expanded && (
           <button 
             className="text-blue-600 text-sm font-medium mt-1"
@@ -196,6 +208,8 @@ const PostCard = ({ post, currentUser }) => {
 
 const PostsList = () => {
   const [newPostText, setNewPostText] = useState('');
+  const [imagePreview, setImagePreview] = useState(null);
+  const [imageData, setImageData] = useState(null);
   const user = useTracker(() => Meteor.user());
   
   const { posts, isLoading } = useTracker(() => {
@@ -207,17 +221,49 @@ const PostsList = () => {
     };
   });
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File is too large. Maximum size is 5MB.');
+      return;
+    }
+    
+    // Validate file type
+    if (!file.type.match('image.*')) {
+      alert('Only image files are allowed.');
+      return;
+    }
+    
+    // Create file preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImagePreview(e.target.result);
+      setImageData(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+  
+  const removeImage = () => {
+    setImagePreview(null);
+    setImageData(null);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!newPostText.trim()) return;
+    if (!newPostText.trim() && !imageData) return;
     
-    Meteor.call('posts.insert', newPostText.trim(), (err, result) => {
+    Meteor.call('posts.insert', newPostText.trim(), imageData, (err, result) => {
       if (err) {
         console.error('Error creating post:', err);
         alert(err.reason || 'Error creating post. Please try again.');
       } else {
         console.log('Post created successfully:', result);
         setNewPostText('');
+        setImagePreview(null);
+        setImageData(null);
       }
     });
   };
@@ -233,10 +279,35 @@ const PostsList = () => {
             className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-gray-800 bg-white"
             rows="3"
           />
-          <div className="flex justify-end mt-3">
+          
+          {imagePreview && (
+            <div className="relative mt-3 border rounded p-2">
+              <button 
+                type="button"
+                onClick={removeImage}
+                className="absolute top-3 right-3 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-colors"
+              >
+                <FiX size={16} />
+              </button>
+              <img src={imagePreview} alt="Preview" className="max-h-60 max-w-full mx-auto rounded" />
+            </div>
+          )}
+          
+          <div className="flex justify-between items-center mt-3">
+            <label className="flex items-center cursor-pointer text-blue-600 hover:text-blue-700 transition-colors">
+              <FiImage size={20} className="mr-1" />
+              <span className="text-sm">Add Photo</span>
+              <input 
+                type="file" 
+                className="hidden" 
+                accept="image/*"
+                onChange={handleImageUpload}
+              />
+            </label>
+            
             <button
               type="submit"
-              disabled={!newPostText.trim()}
+              disabled={!newPostText.trim() && !imageData}
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Post
