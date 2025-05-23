@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 
+
 # Meteor build directory
 .meteor/local
 
@@ -30,3 +31,8 @@ yarn-error.log*
 *.njsproj
 *.sln
 *.sw?
+GUIDE.MD
+collectioguide.md
+meteor3jsdocs.txt
+meteorAccounts_guide.md
+emailguide.md

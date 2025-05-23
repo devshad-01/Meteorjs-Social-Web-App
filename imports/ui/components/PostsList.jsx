@@ -6,7 +6,50 @@ import { FiHeart, FiMessageSquare, FiShare2, FiMoreVertical } from 'react-icons/
 
 const PostCard = ({ post, currentUser }) => {
   const [expanded, setExpanded] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [newComment, setNewComment] = useState('');
   const isLongText = (post && post.text && typeof post.text === 'string') ? post.text.length > 280 : false;
+  const isOwner = currentUser && post.owner === currentUser._id;
+  const userLiked = currentUser && post.likes && Array.isArray(post.likes) && post.likes.includes(currentUser._id);
+  
+  const handleDeletePost = () => {
+    if (confirm('Are you sure you want to delete this post?')) {
+      Meteor.call('posts.remove', post._id, (err) => {
+        if (err) {
+          console.error('Error deleting post:', err);
+          alert(err.reason || 'Error deleting post');
+        }
+      });
+    }
+  };
+  
+  const handleLike = () => {
+    if (!currentUser) {
+      alert('Please sign in to like posts');
+      return;
+    }
+    
+    Meteor.call('posts.like', post._id, (err) => {
+      if (err) {
+        console.error('Error liking post:', err);
+        alert(err.reason || 'Error processing like');
+      }
+    });
+  };
+  
+  const handleComment = (e) => {
+    e.preventDefault();
+    if (!newComment.trim() || !currentUser) return;
+    
+    Meteor.call('posts.comment', post._id, newComment.trim(), (err) => {
+      if (err) {
+        console.error('Error adding comment:', err);
+        alert(err.reason || 'Error adding comment');
+      } else {
+        setNewComment('');
+      }
+    });
+  };
   
   return (
     <div className="bg-white p-4 sm:p-5 rounded-lg shadow-md mb-4 transition-all hover:shadow-lg">
@@ -20,9 +63,23 @@ const PostCard = ({ post, currentUser }) => {
             {new Date(post.createdAt).toLocaleString()}
           </p>
         </div>
-        <button className="text-gray-400 hover:text-gray-600 p-1">
-          <FiMoreVertical size={18} />
-        </button>
+        {isOwner && (
+          <div className="relative group">
+            <button className="text-gray-400 hover:text-gray-600 p-1">
+              <FiMoreVertical size={18} />
+            </button>
+            <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg z-10 hidden group-hover:block">
+              <div className="py-1">
+                <button 
+                  onClick={handleDeletePost}
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                >
+                  Delete Post
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       
       <div className="mb-3">
@@ -49,12 +106,34 @@ const PostCard = ({ post, currentUser }) => {
         )}
       </div>
       
+      <div className="flex justify-between items-center text-xs text-gray-500 mb-2">
+        {post.likeCount > 0 && (
+          <div>
+            {post.likeCount} {post.likeCount === 1 ? 'like' : 'likes'}
+          </div>
+        )}
+        {post.commentCount > 0 && (
+          <button 
+            onClick={() => setShowComments(!showComments)}
+            className="hover:underline"
+          >
+            {post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}
+          </button>
+        )}
+      </div>
+      
       <div className="flex justify-between border-t pt-3 text-gray-500">
-        <button className="flex items-center hover:text-blue-500 transition">
-          <FiHeart size={18} className="mr-1" />
-          <span className="text-xs sm:text-sm">Like</span>
+        <button 
+          className={`flex items-center ${userLiked ? 'text-blue-500' : 'hover:text-blue-500'} transition`}
+          onClick={handleLike}
+        >
+          <FiHeart size={18} className="mr-1" fill={userLiked ? 'currentColor' : 'none'} />
+          <span className="text-xs sm:text-sm">{userLiked ? 'Liked' : 'Like'}</span>
         </button>
-        <button className="flex items-center hover:text-blue-500 transition">
+        <button 
+          className="flex items-center hover:text-blue-500 transition"
+          onClick={() => setShowComments(!showComments)}
+        >
           <FiMessageSquare size={18} className="mr-1" />
           <span className="text-xs sm:text-sm">Comment</span>
         </button>
@@ -63,6 +142,54 @@ const PostCard = ({ post, currentUser }) => {
           <span className="text-xs sm:text-sm">Share</span>
         </button>
       </div>
+      
+      {showComments && (
+        <div className="mt-3 pt-3 border-t">
+          {post.comments && post.comments.length > 0 ? (
+            <div className="mb-3 space-y-3">
+              {post.comments.map(comment => (
+                <div key={comment.id} className="bg-gray-50 p-3 rounded">
+                  <div className="flex items-center mb-1">
+                    <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                      {comment.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="ml-2">
+                      <span className="font-medium text-sm">{comment.username}</span>
+                      <span className="text-xs text-gray-500 ml-2">
+                        {new Date(comment.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700">{comment.text}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 mb-3">No comments yet. Be the first to comment!</p>
+          )}
+          
+          {currentUser ? (
+            <form onSubmit={handleComment} className="flex gap-2">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Write a comment..."
+                className="flex-grow p-2 border rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+              <button
+                type="submit"
+                disabled={!newComment.trim()}
+                className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                Post
+              </button>
+            </form>
+          ) : (
+            <p className="text-sm text-gray-500 italic">Sign in to leave a comment</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -84,10 +211,12 @@ const PostsList = () => {
     e.preventDefault();
     if (!newPostText.trim()) return;
     
-    Meteor.call('posts.insert', newPostText.trim(), (err) => {
+    Meteor.call('posts.insert', newPostText.trim(), (err, result) => {
       if (err) {
-        alert(err.reason || 'Error creating post');
+        console.error('Error creating post:', err);
+        alert(err.reason || 'Error creating post. Please try again.');
       } else {
+        console.log('Post created successfully:', result);
         setNewPostText('');
       }
     });

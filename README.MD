@@ -9,6 +9,7 @@ A minimalistic social web app built with Meteor.js, React, and Tailwind CSS.
 - Like posts
 - Simple UI with Tailwind CSS
 
+
 ## Setup & Installation
 
 1. Clone the repository

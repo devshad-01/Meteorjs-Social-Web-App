@@ -14,36 +14,107 @@ if (Meteor.isServer) {
   });
 
   Meteor.methods({
-    'posts.insert'(text) {
+    async 'posts.insert'(text) {
       check(text, String);
       if (!this.userId) {
         throw new Meteor.Error('not-authorized', 'You must be logged in to create a post');
       }
-      const user = Meteor.users.findOne(this.userId);
-      const username = user.username || user.profile?.name || (user.emails && user.emails[0]?.address) || 'Anonymous';
-      return Posts.insert({
-        text,
-        createdAt: new Date(),
-        owner: this.userId,
-        username
-      });
+      try {
+        const user = await Meteor.users.findOneAsync(this.userId);
+        if (!user) {
+          throw new Meteor.Error('user-not-found', 'User not found');
+        }
+        const username = user.username || user.profile?.name || (user.emails && user.emails[0]?.address) || 'Anonymous';
+        
+        return await Posts.insertAsync({
+          text,
+          createdAt: new Date(),
+          owner: this.userId,
+          username,
+          likes: [],
+          likeCount: 0,
+          comments: [],
+          commentCount: 0
+        });
+      } catch (error) {
+        console.error('Error in posts.insert method:', error);
+        throw new Meteor.Error('internal-error', error.message || 'An error occurred while creating your post');
+      }
     },
-    'posts.remove'(postId) {
+    async 'posts.remove'(postId) {
       check(postId, String);
-      const post = Posts.findOne(postId);
+      const post = await Posts.findOneAsync(postId);
       if (!this.userId || !post || post.owner !== this.userId) {
         throw new Meteor.Error('not-authorized', 'You can only remove your own posts');
       }
-      return Posts.remove(postId);
+      return await Posts.removeAsync(postId);
     },
-    'posts.edit'(postId, newText) {
+    async 'posts.edit'(postId, newText) {
       check(postId, String);
       check(newText, String);
-      const post = Posts.findOne(postId);
+      const post = await Posts.findOneAsync(postId);
       if (!this.userId || !post || post.owner !== this.userId) {
         throw new Meteor.Error('not-authorized', 'You can only edit your own posts');
       }
-      return Posts.update(postId, { $set: { text: newText } });
+      return await Posts.updateAsync(postId, { $set: { text: newText } });
+    },
+    async 'posts.like'(postId) {
+      check(postId, String);
+      if (!this.userId) {
+        throw new Meteor.Error('not-authorized', 'You must be logged in to like a post');
+      }
+      
+      const post = await Posts.findOneAsync(postId);
+      if (!post) {
+        throw new Meteor.Error('not-found', 'Post not found');
+      }
+      
+      // Check if user already liked the post
+      const likes = post.likes || [];
+      const userLiked = likes.includes(this.userId);
+      
+      if (userLiked) {
+        // Unlike the post
+        return await Posts.updateAsync(postId, { 
+          $pull: { likes: this.userId },
+          $inc: { likeCount: -1 }
+        });
+      } else {
+        // Like the post
+        return await Posts.updateAsync(postId, { 
+          $addToSet: { likes: this.userId },
+          $inc: { likeCount: 1 }
+        });
+      }
+    },
+    async 'posts.comment'(postId, commentText) {
+      check(postId, String);
+      check(commentText, String);
+      
+      if (!this.userId) {
+        throw new Meteor.Error('not-authorized', 'You must be logged in to comment');
+      }
+      
+      const post = await Posts.findOneAsync(postId);
+      if (!post) {
+        throw new Meteor.Error('not-found', 'Post not found');
+      }
+      
+      const user = await Meteor.users.findOneAsync(this.userId);
+      const username = user.username || user.profile?.name || (user.emails && user.emails[0]?.address) || 'Anonymous';
+      
+      const comment = {
+        id: new Mongo.ObjectID()._str,
+        text: commentText,
+        createdAt: new Date(),
+        owner: this.userId,
+        username
+      };
+      
+      return await Posts.updateAsync(postId, { 
+        $push: { comments: comment },
+        $inc: { commentCount: 1 }
+      });
     }
   });
 
@@ -53,11 +124,38 @@ if (Meteor.isServer) {
     if (count === 0) {
       const now = new Date();
       const samplePosts = [
-        { text: 'Welcome to our social platform!', createdAt: now, username: 'admin', owner: null },
-        { text: 'This is a sample post. Create an account to add yours!', createdAt: new Date(now - 1000 * 60 * 60), username: 'admin', owner: null },
-        { text: 'Check out the new features we just added!', createdAt: new Date(now - 1000 * 60 * 60 * 2), username: 'admin', owner: null }
+        { 
+          text: 'Welcome to our social platform!', 
+          createdAt: now, 
+          username: 'admin', 
+          owner: null, 
+          likes: [], 
+          likeCount: 0, 
+          comments: [], 
+          commentCount: 0 
+        },
+        { 
+          text: 'This is a sample post. Create an account to add yours!', 
+          createdAt: new Date(now - 1000 * 60 * 60), 
+          username: 'admin', 
+          owner: null, 
+          likes: [], 
+          likeCount: 0, 
+          comments: [], 
+          commentCount: 0 
+        },
+        { 
+          text: 'Check out the new features we just added!', 
+          createdAt: new Date(now - 1000 * 60 * 60 * 2), 
+          username: 'admin', 
+          owner: null, 
+          likes: [], 
+          likeCount: 0, 
+          comments: [], 
+          commentCount: 0 
+        }
       ];
-      samplePosts.forEach(post => Posts.insert(post));
+      samplePosts.forEach(async post => await Posts.insertAsync(post));
     }
   });
 
