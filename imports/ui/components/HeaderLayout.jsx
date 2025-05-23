@@ -1,13 +1,15 @@
 // /imports/ui/components/HeaderLayout.jsx
 import React from 'react';
 import { FiHome, FiPlusSquare, FiMessageCircle, FiUser } from 'react-icons/fi';
+import Logo from './Logo';
 
 const HeaderLayout = ({ children }) => {
     return (
         <div className="flex flex-col min-h-screen bg-gray-100">
             {/* Top Header */}
             <header className="bg-blue-600 text-white py-4 shadow-md">
-                <div className="container mx-auto px-4">
+                <div className="container mx-auto px-4 flex items-center">
+                    <Logo size={36} className="mr-2" />
                     <h1 className="text-xl font-bold">Meteor Social Web App</h1>
                 </div>
             </header>
