@@ -5,6 +5,7 @@ import '/imports/api/users/methods';
 import '/imports/api/users/users';
 import '/imports/api/posts/posts';
 import '/imports/api/messages/messages';
+import '/imports/api/mpesa/mpesa';
 
 Meteor.startup(async () => {
   // Configure email settings

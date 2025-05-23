@@ -49,5 +49,60 @@ Meteor.methods({
       console.error('Error updating user profile:', error);
       throw new Meteor.Error('update-failed', 'Failed to update profile information');
     }
+  },
+  
+  // For testing purposes - in production this would be connected to payment system
+  async toggleAccountVerification() {
+    if (!this.userId) {
+      throw new Meteor.Error('not-authorized', 'You must be logged in to request verification');
+    }
+    
+    try {
+      const user = await Meteor.users.findOneAsync(this.userId);
+      const currentStatus = user.profile?.isVerified || false;
+      
+      // Toggle verification status
+      return await Meteor.users.updateAsync(this.userId, {
+        $set: {
+          'profile.isVerified': !currentStatus,
+          'profile.verificationDate': !currentStatus ? new Date() : null
+        }
+      });
+    } catch (error) {
+      console.error('Error toggling verification status:', error);
+      throw new Meteor.Error('verification-failed', 'Failed to update verification status');
+    }
+  },
+  
+  // Verify user account after M-Pesa payment
+  async verifyUserWithMpesa({ transactionId, amount, plan }) {
+    check(transactionId, String);
+    check(amount, Number);
+    check(plan, String);
+    
+    if (!this.userId) {
+      throw new Meteor.Error('not-authorized', 'You must be logged in to request verification');
+    }
+    
+    try {
+      // Update user's verification status
+      await Meteor.users.updateAsync(this.userId, {
+        $set: {
+          'profile.isVerified': true,
+          'profile.verificationDate': new Date(),
+          'profile.verificationTransaction': transactionId,
+          'profile.verificationPlan': plan,
+          'profile.verificationAmount': amount
+        }
+      });
+      
+      return {
+        success: true,
+        message: 'Your account has been successfully verified!'
+      };
+    } catch (error) {
+      console.error('Error verifying user with M-Pesa:', error);
+      throw new Meteor.Error('verification-failed', 'Failed to verify your account. Please try again.');
+    }
   }
 });

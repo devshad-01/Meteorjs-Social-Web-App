@@ -12,6 +12,9 @@ if (Meteor.isServer) {
     // Add createdAt date to profile
     customizedUser.profile.createdAt = new Date();
     
+    // Set isVerified to false by default
+    customizedUser.profile.isVerified = false;
+    
     // Set default avatar using Gravatar or similar service if email exists
     if (user.emails && user.emails.length > 0) {
       const email = user.emails[0].address;
@@ -50,6 +53,7 @@ if (Meteor.isServer) {
         fields: {
           'profile.name': 1,
           'profile.avatar': 1,
+          'profile.isVerified': 1,
           'username': 1
         }
       }

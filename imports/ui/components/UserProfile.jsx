@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { FiEdit2, FiUser, FiMail, FiCalendar, FiLogOut, FiCheck, FiX, FiImage } from 'react-icons/fi';
+import { FiEdit2, FiUser, FiMail, FiCalendar, FiLogOut, FiCheck, FiX, FiImage, FiAward, FiCreditCard } from 'react-icons/fi';
+import { VerificationBadge } from './VerificationBadge';
+import { VerificationPlans } from './VerificationPlans';
 
 export const UserProfile = () => {
   const { user, isLoading } = useTracker(() => {
@@ -16,6 +18,7 @@ export const UserProfile = () => {
   });
   
   const [isEditing, setIsEditing] = useState(false);
+  const [showVerificationPlans, setShowVerificationPlans] = useState(false);
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [avatar, setAvatar] = useState('');
@@ -101,6 +104,24 @@ export const UserProfile = () => {
       setIsSubmitting(false);
     }
   };
+  
+  // For testing, will be replaced with payment flow later
+  const toggleVerification = async () => {
+    setIsSubmitting(true);
+    try {
+      await Meteor.callAsync('toggleAccountVerification');
+      setSuccess(user?.profile?.isVerified ? 'Account verification removed' : 'Account verified successfully');
+    } catch (err) {
+      setError(err.reason || 'Failed to toggle verification status');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  // Show verification plans
+  const handleShowVerificationPlans = () => {
+    setShowVerificationPlans(true);
+  };
 
   if (isLoading) {
     return (
@@ -133,6 +154,8 @@ export const UserProfile = () => {
     </div>
   );
 
+  const isVerified = user.profile?.isVerified || false;
+
   return (
     <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6">
       <div className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -148,7 +171,10 @@ export const UserProfile = () => {
                 />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white">{user.profile?.name || user.username || 'User'}</h2>
+                <div className="flex items-center">
+                  <h2 className="text-2xl font-bold text-white">{user.profile?.name || user.username || 'User'}</h2>
+                  <VerificationBadge isVerified={isVerified} className="ml-2" />
+                </div>
                 <p className="text-blue-100">{user.emails?.[0]?.address || 'No email'}</p>
               </div>
             </div>
@@ -279,7 +305,7 @@ export const UserProfile = () => {
                   <div>
                     <p className="text-sm font-medium">Email</p>
                     <div className="flex items-center flex-wrap">
-                      <p>{user.emails?.[0]?.address || 'No email address'}</p>
+                      <p>{user.emails?.[0]?.address || 'No email'}</p>
                       {user.emails?.[0] && !user.emails[0].verified && (
                         <div className="ml-2 flex items-center">
                           <span className="text-yellow-600 text-sm">(Unverified)</span>
@@ -305,6 +331,36 @@ export const UserProfile = () => {
                         'Unknown'}</p>
                   </div>
                 </div>
+                
+                <div className="flex items-center text-gray-700">
+                  <FiAward className="mr-3 text-blue-500" />
+                  <div>
+                    <p className="text-sm font-medium">Account Status</p>
+                    <div className="flex items-center">
+                      {isVerified ? (
+                        <span className="text-green-600 text-sm flex items-center">
+                          <FiCheck className="mr-1" /> Verified Account
+                          {user.profile?.verificationDate && (
+                            <span className="text-gray-500 text-xs ml-2">
+                              (Since {new Date(user.profile.verificationDate).toLocaleDateString()})
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-gray-600 text-sm">Standard Account</span>
+                      )}
+                      
+                      {!isVerified && (
+                        <button
+                          onClick={handleShowVerificationPlans}
+                          className="ml-3 flex items-center text-blue-600 hover:text-blue-800 text-sm underline"
+                        >
+                          <FiCreditCard className="mr-1" /> Get Verified
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -320,6 +376,22 @@ export const UserProfile = () => {
           </button>
         </div>
       </div>
+      
+      {/* Verification Plans */}
+      {showVerificationPlans && !isVerified && (
+        <div className="mt-6">
+          <div className="flex justify-between items-center mb-4 bg-white p-4 rounded-xl shadow-md">
+            <h2 className="text-xl font-bold text-gray-800">Verification Plans</h2>
+            <button 
+              onClick={() => setShowVerificationPlans(false)} 
+              className="text-gray-500 hover:text-gray-700 px-3 py-1 rounded-md border border-gray-200 hover:bg-gray-50"
+            >
+              Close
+            </button>
+          </div>
+          <VerificationPlans />
+        </div>
+      )}
     </div>
   );
 };
