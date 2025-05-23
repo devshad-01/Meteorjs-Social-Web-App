@@ -86,7 +86,7 @@ const MessagesList = () => {
           <p className="text-yellow-700 mb-4">You need to be logged in to send and view messages.</p>
           <a 
             href="/login" 
-            className="inline-block bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors"
+            className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
           >
             Sign in
           </a>
@@ -115,7 +115,7 @@ const MessagesList = () => {
                       className="p-4 hover:bg-gray-50 cursor-pointer flex items-center"
                       onClick={() => handleSelectContact(contact)}
                     >
-                      <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold mr-3">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-3">
                         {getContactName(contact).charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -131,15 +131,15 @@ const MessagesList = () => {
             </>
           ) : (
             <>
-              <div className="flex items-center p-3 bg-primary-50 border-b">
+              <div className="flex items-center p-3 bg-blue-50 border-b">
                 <button 
-                  className="mr-2 p-1 rounded-full hover:bg-primary-100"
+                  className="mr-2 p-1 rounded-full hover:bg-blue-100"
                   onClick={() => setSelectedContact(null)}
                 >
-                  <FiArrowLeft size={20} className="text-primary-600" />
+                  <FiArrowLeft size={20} className="text-blue-600" />
                 </button>
                 <div className="flex items-center">
-                  <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold mr-2">
+                  <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-2">
                     {getContactName(selectedContact).charAt(0).toUpperCase()}
                   </div>
                   <p className="font-medium">{getContactName(selectedContact)}</p>
@@ -157,9 +157,9 @@ const MessagesList = () => {
                     filteredMessages.map(msg => (
                       <div 
                         key={msg._id} 
-                        className={`p-3 rounded-lg max-w-[85%] ${
+                        className={`p-3 rounded-lg max-w-[70%] ${
                           msg.senderId === user._id 
-                            ? 'bg-primary-100 text-primary-900 ml-auto' 
+                            ? 'bg-blue-100 text-blue-900 ml-auto' 
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
@@ -179,13 +179,13 @@ const MessagesList = () => {
                       type="text"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      className="flex-grow p-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="flex-grow p-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Type a message..."
                     />
                     <button
                       type="submit"
                       disabled={!message.trim()}
-                      className="bg-primary-600 text-white p-2 rounded-r-md hover:bg-primary-700 disabled:opacity-50"
+                      className="bg-blue-600 text-white p-2 rounded-r-md hover:bg-blue-700 disabled:opacity-50"
                     >
                       <FiSend size={20} />
                     </button>
@@ -210,11 +210,11 @@ const MessagesList = () => {
                   <div 
                     key={contact._id} 
                     className={`p-4 hover:bg-gray-50 cursor-pointer flex items-center ${
-                      selectedContact?._id === contact._id ? 'bg-primary-50' : ''
+                      selectedContact?._id === contact._id ? 'bg-blue-50' : ''
                     }`}
                     onClick={() => handleSelectContact(contact)}
                   >
-                    <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold mr-3">
+                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-3">
                       {getContactName(contact).charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -232,8 +232,8 @@ const MessagesList = () => {
           <div className="w-2/3 flex flex-col">
             {selectedContact ? (
               <>
-                <div className="p-4 bg-primary-50 border-b flex items-center">
-                  <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold mr-3">
+                <div className="p-4 bg-blue-50 border-b flex items-center">
+                  <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold mr-3">
                     {getContactName(selectedContact).charAt(0).toUpperCase()}
                   </div>
                   <div>
@@ -256,7 +256,7 @@ const MessagesList = () => {
                         key={msg._id} 
                         className={`p-3 rounded-lg max-w-[70%] ${
                           msg.senderId === user._id 
-                            ? 'bg-primary-100 text-primary-900 ml-auto' 
+                            ? 'bg-blue-100 text-blue-900 ml-auto' 
                             : 'bg-gray-100 text-gray-800'
                         }`}
                       >
@@ -276,13 +276,13 @@ const MessagesList = () => {
                       type="text"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      className="flex-grow p-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      className="flex-grow p-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Type a message..."
                     />
                     <button
                       type="submit"
                       disabled={!message.trim()}
-                      className="bg-primary-600 text-white px-4 py-2 rounded-r-md hover:bg-primary-700 disabled:opacity-50 flex items-center"
+                      className="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 disabled:opacity-50 flex items-center"
                     >
                       <FiSend size={16} className="mr-1" /> Send
                     </button>
@@ -292,7 +292,7 @@ const MessagesList = () => {
             ) : (
               <div className="flex items-center justify-center h-full bg-gray-50">
                 <div className="text-center p-6">
-                  <div className="h-16 w-16 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-2xl mx-auto mb-4">
+                  <div className="h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-2xl mx-auto mb-4">
                     <FiMessageCircle size={28} />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">Your Messages</h3>

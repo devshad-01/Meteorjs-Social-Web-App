@@ -38,29 +38,25 @@ export const Signup = ({ toggleForm }) => {
         </div>
       )}
       
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
-            Email
-          </label>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
           <input
             type="email"
             id="email"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
         
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-gray-700 font-medium mb-2">
-            Password
-          </label>
+        <div>
+          <label htmlFor="password" className="block text-gray-700 font-medium mb-1">Password</label>
           <input
             type="password"
             id="password"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -75,7 +71,7 @@ export const Signup = ({ toggleForm }) => {
           <input
             type="password"
             id="confirmPassword"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 bg-white"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
@@ -85,20 +81,20 @@ export const Signup = ({ toggleForm }) => {
         
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-200"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
         >
           Sign Up
         </button>
       </form>
       
-      <div className="mt-4 text-center">
-        <p>
+      <div className="mt-6 text-center pt-4 border-t">
+        <p className="text-sm text-gray-700">
           Already have an account?{' '}
           <button
             onClick={() => toggleForm('login')}
-            className="text-blue-500 hover:text-blue-700"
+            className="text-blue-600 hover:text-blue-800 font-medium"
           >
-            Log In
+            Sign In
           </button>
         </p>
       </div>

@@ -11,7 +11,7 @@ const PostCard = ({ post, currentUser }) => {
   return (
     <div className="bg-white p-4 sm:p-5 rounded-lg shadow-md mb-4 transition-all hover:shadow-lg">
       <div className="flex items-center mb-3">
-        <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold">
+        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
           {post.username ? post.username.charAt(0).toUpperCase() : '?'}
         </div>
         <div className="ml-3 flex-grow">
@@ -30,7 +30,7 @@ const PostCard = ({ post, currentUser }) => {
           <>
             <p className="text-gray-800">{post.text.substring(0, 280)}...</p>
             <button 
-              className="text-primary-600 text-sm font-medium mt-1"
+              className="text-blue-600 text-sm font-medium mt-1"
               onClick={() => setExpanded(true)}
             >
               Read more
@@ -41,7 +41,7 @@ const PostCard = ({ post, currentUser }) => {
         )}
         {isLongText && expanded && (
           <button 
-            className="text-primary-600 text-sm font-medium mt-1"
+            className="text-blue-600 text-sm font-medium mt-1"
             onClick={() => setExpanded(false)}
           >
             Show less
@@ -50,15 +50,15 @@ const PostCard = ({ post, currentUser }) => {
       </div>
       
       <div className="flex justify-between border-t pt-3 text-gray-500">
-        <button className="flex items-center hover:text-primary-500 transition">
+        <button className="flex items-center hover:text-blue-500 transition">
           <FiHeart size={18} className="mr-1" />
           <span className="text-xs sm:text-sm">Like</span>
         </button>
-        <button className="flex items-center hover:text-primary-500 transition">
+        <button className="flex items-center hover:text-blue-500 transition">
           <FiMessageSquare size={18} className="mr-1" />
           <span className="text-xs sm:text-sm">Comment</span>
         </button>
-        <button className="flex items-center hover:text-primary-500 transition">
+        <button className="flex items-center hover:text-blue-500 transition">
           <FiShare2 size={18} className="mr-1" />
           <span className="text-xs sm:text-sm">Share</span>
         </button>
@@ -101,14 +101,14 @@ const PostsList = () => {
             value={newPostText}
             onChange={(e) => setNewPostText(e.target.value)}
             placeholder="What's on your mind?"
-            className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+            className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-gray-800 bg-white"
             rows="3"
           />
           <div className="flex justify-end mt-3">
             <button
               type="submit"
               disabled={!newPostText.trim()}
-              className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Post
             </button>
@@ -142,9 +142,9 @@ const PostsList = () => {
       )}
 
       {!user && (
-        <div className="bg-primary-50 p-5 rounded-lg border border-primary-200 text-center mt-4 shadow-md">
-          <p className="text-primary-800 mb-3 font-medium">Sign in to create your own posts!</p>
-          <a href="/login" className="inline-block bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors">
+        <div className="bg-blue-50 p-5 rounded-lg border border-blue-200 text-center mt-4 shadow-md">
+          <p className="text-blue-800 mb-3 font-medium">Sign in to create your own posts!</p>
+          <a href="/login" className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
             Sign in
           </a>
         </div>

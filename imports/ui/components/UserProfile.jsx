@@ -58,7 +58,7 @@ export const UserProfile = () => {
     <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6">
       <div className="bg-white rounded-xl shadow-md overflow-hidden">
         {/* Profile Header */}
-        <div className="bg-gradient-to-r from-primary-600 to-primary-800 px-4 py-6 sm:p-8 text-white">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-4 py-6 sm:p-8 text-white">
           <div className="sm:flex sm:items-center sm:justify-between">
             <div className="flex items-center mb-4 sm:mb-0">
               <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-white p-1 mr-4 sm:mr-6 shadow-lg">
@@ -69,14 +69,14 @@ export const UserProfile = () => {
                 />
               </div>
               <div>
-                <h2 className="text-2xl font-bold">{user.profile?.name || user.username || 'User'}</h2>
-                <p className="text-primary-100">{user.emails[0].address}</p>
+                <h2 className="text-2xl font-bold text-white">{user.profile?.name || user.username || 'User'}</h2>
+                <p className="text-blue-100">{user.emails[0].address}</p>
               </div>
             </div>
             {!isEditing && (
               <button
                 onClick={handleEditProfile}
-                className="inline-flex items-center px-4 py-2 bg-white text-primary-700 rounded-lg font-medium shadow-sm hover:bg-primary-50 transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-white text-blue-700 rounded-lg font-medium shadow-sm hover:bg-blue-50 transition-colors"
               >
                 <FiEdit2 className="mr-2" /> Edit Profile
               </button>
@@ -112,7 +112,7 @@ export const UserProfile = () => {
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Your name"
                   required
                 />
@@ -126,7 +126,7 @@ export const UserProfile = () => {
                   id="bio"
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Tell us about yourself"
                   rows="4"
                 />
@@ -142,7 +142,7 @@ export const UserProfile = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   Save Changes
                 </button>
@@ -157,7 +157,7 @@ export const UserProfile = () => {
               
               <div className="space-y-3">
                 <div className="flex items-center text-gray-700">
-                  <FiUser className="mr-3 text-primary-500" />
+                  <FiUser className="mr-3 text-blue-500" />
                   <div>
                     <p className="text-sm font-medium">Username</p>
                     <p>{user.username || 'Not set'}</p>
@@ -165,7 +165,7 @@ export const UserProfile = () => {
                 </div>
                 
                 <div className="flex items-center text-gray-700">
-                  <FiMail className="mr-3 text-primary-500" />
+                  <FiMail className="mr-3 text-blue-500" />
                   <div>
                     <p className="text-sm font-medium">Email</p>
                     <div className="flex items-center">
@@ -175,7 +175,7 @@ export const UserProfile = () => {
                           <span className="text-yellow-600 text-sm">(Unverified)</span>
                           <button
                             onClick={sendVerificationEmail}
-                            className="ml-2 text-primary-600 hover:text-primary-800 text-sm underline"
+                            className="ml-2 text-blue-600 hover:text-blue-800 text-sm underline"
                           >
                             Verify Now
                           </button>
@@ -186,7 +186,7 @@ export const UserProfile = () => {
                 </div>
                 
                 <div className="flex items-center text-gray-700">
-                  <FiCalendar className="mr-3 text-primary-500" />
+                  <FiCalendar className="mr-3 text-blue-500" />
                   <div>
                     <p className="text-sm font-medium">Member since</p>
                     <p>{user.profile?.createdAt?.toLocaleDateString() || new Date(user.createdAt).toLocaleDateString() || 'Unknown'}</p>
