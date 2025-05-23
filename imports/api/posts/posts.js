@@ -5,8 +5,8 @@ export const Posts = new Mongo.Collection('posts');
 
 if (Meteor.isServer) {
   // Publish posts to all clients (no login required)
-  Meteor.publish('posts', function() {
-    return Posts.find({}, { 
+  Meteor.publish('posts', function () {
+    return Posts.find({}, {
       sort: { createdAt: -1 },
       limit: 20
     });
@@ -14,7 +14,7 @@ if (Meteor.isServer) {
 
   // Only allow insertion if user is logged in
   Meteor.methods({
-    'posts.insert'(text) {
+    async 'posts.insert'(text) {
       if (!this.userId) {
         throw new Meteor.Error('not-authorized', 'You must be logged in to create a post');
       }
@@ -22,7 +22,7 @@ if (Meteor.isServer) {
       const user = Meteor.users.findOne(this.userId);
       const username = user.username || user.profile?.name || user.emails[0].address;
 
-      Posts.insert({
+      await Posts.insertAsync({
         text,
         createdAt: new Date(),
         owner: this.userId,
@@ -30,12 +30,9 @@ if (Meteor.isServer) {
       });
     }
   });
-}
 
-// Initialize with some data if empty
-if (Meteor.isServer) {
+  // Initialize with some data if empty
   Meteor.startup(async () => {
-    // Use countAsync instead of count for server-side code
     const count = await Posts.find().countAsync();
     if (count === 0) {
       const samplePosts = [
@@ -43,8 +40,10 @@ if (Meteor.isServer) {
         { text: 'This is a sample post. Create an account to add yours!', createdAt: new Date(Date.now() - 1000 * 60 * 60), username: 'admin' },
         { text: 'Check out the new features we just added!', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2), username: 'admin' }
       ];
-      
-      samplePosts.forEach(post => Posts.insert(post));
+
+      for (const post of samplePosts) {
+        await Posts.insertAsync(post);
+      }
     }
   });
 }
