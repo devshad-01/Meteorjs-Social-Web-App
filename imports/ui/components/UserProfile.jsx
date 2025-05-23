@@ -1,15 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { FiEdit2, FiUser, FiMail, FiCalendar, FiLogOut, FiCheck, FiX } from 'react-icons/fi';
+import { FiEdit2, FiUser, FiMail, FiCalendar, FiLogOut, FiCheck, FiX, FiImage } from 'react-icons/fi';
 
 export const UserProfile = () => {
-  const user = useTracker(() => Meteor.user());
+  const { user, isLoading } = useTracker(() => {
+    // Subscribe to both user data publications
+    const userSub = Meteor.subscribe('userData');
+    const allUsersSub = Meteor.subscribe('allUsers');
+    
+    return {
+      user: Meteor.user(),
+      isLoading: !userSub.ready() || !allUsersSub.ready()
+    };
+  });
+  
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
+  const [avatar, setAvatar] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleLogout = () => {
     Meteor.logout((err) => {
@@ -20,39 +32,106 @@ export const UserProfile = () => {
     });
   };
 
+  useEffect(() => {
+    // Clear success and error messages after 5 seconds
+    if (success || error) {
+      const timer = setTimeout(() => {
+        setSuccess('');
+        setError('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success, error]);
+
   const handleEditProfile = () => {
-    setName(user.profile?.name || '');
-    setBio(user.profile?.bio || '');
+    setName(user?.profile?.name || '');
+    setBio(user?.profile?.bio || '');
+    setAvatar(user?.profile?.avatar || '');
     setIsEditing(true);
   };
 
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setIsSubmitting(true);
 
-    Meteor.call('updateUserProfile', { name, bio }, (err) => {
-      if (err) {
-        console.error('Profile update error:', err);
-        setError(err.reason || 'Failed to update profile');
-      } else {
-        setSuccess('Profile updated successfully');
-        setIsEditing(false);
-      }
-    });
+    try {
+      await Meteor.callAsync('updateUserProfile', { name, bio, avatar });
+      setSuccess('Profile updated successfully');
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Profile update error:', err);
+      setError(err.reason || 'Failed to update profile');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const sendVerificationEmail = () => {
-    Meteor.call('sendVerificationEmail', (err) => {
-      if (err) {
-        setError(err.reason || 'Failed to send verification email');
-      } else {
-        setSuccess('Verification email sent. Please check your inbox.');
-      }
-    });
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Simple validation for file size and type
+    if (file.size > 1024 * 1024) {
+      setError('Image too large. Maximum size is 1MB.');
+      return;
+    }
+    
+    if (!file.type.match('image.*')) {
+      setError('Only image files are allowed.');
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setAvatar(e.target.result);
+    };
+    reader.readAsDataURL(file);
   };
 
-  if (!user) return null;
+  const sendVerificationEmail = async () => {
+    setIsSubmitting(true);
+    try {
+      await Meteor.callAsync('sendVerificationEmail');
+      setSuccess('Verification email sent. Please check your inbox.');
+    } catch (err) {
+      setError(err.reason || 'Failed to send verification email');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden p-8">
+          <div className="animate-pulse">
+            <div className="h-32 bg-gray-200 rounded-md mb-6"></div>
+            <div className="h-4 bg-gray-200 rounded-md w-3/4 mb-3"></div>
+            <div className="h-4 bg-gray-200 rounded-md w-1/2 mb-6"></div>
+            <div className="space-y-4">
+              <div className="h-12 bg-gray-200 rounded-md"></div>
+              <div className="h-12 bg-gray-200 rounded-md"></div>
+              <div className="h-12 bg-gray-200 rounded-md"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return (
+    <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6">
+      <div className="bg-white rounded-xl shadow-md overflow-hidden p-8 text-center">
+        <h2 className="text-xl text-gray-700 mb-2">Not Logged In</h2>
+        <p className="text-gray-500 mb-4">Please log in to view your profile</p>
+        <a href="/login" className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          Go to Login
+        </a>
+      </div>
+    </div>
+  );
 
   return (
     <div className="max-w-4xl mx-auto py-6 px-4 sm:px-6">
@@ -63,14 +142,14 @@ export const UserProfile = () => {
             <div className="flex items-center mb-4 sm:mb-0">
               <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-white p-1 mr-4 sm:mr-6 shadow-lg">
                 <img
-                  src={user.profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.emails[0].address)}&background=random`}
+                  src={user.profile?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.emails?.[0]?.address || 'User')}&background=random`}
                   alt="Profile"
-                  className="w-full h-full rounded-full"
+                  className="w-full h-full rounded-full object-cover"
                 />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">{user.profile?.name || user.username || 'User'}</h2>
-                <p className="text-blue-100">{user.emails[0].address}</p>
+                <p className="text-blue-100">{user.emails?.[0]?.address || 'No email'}</p>
               </div>
             </div>
             {!isEditing && (
@@ -131,20 +210,51 @@ export const UserProfile = () => {
                   rows="4"
                 />
               </div>
+              
+              <div>
+                <label htmlFor="avatar" className="block text-gray-700 font-medium mb-2">
+                  Profile Picture
+                </label>
+                <div className="flex items-center space-x-4">
+                  <div className="h-16 w-16 rounded-full bg-gray-100 overflow-hidden">
+                    <img 
+                      src={avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.emails?.[0]?.address || 'User')}&background=random`} 
+                      alt="Avatar preview" 
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="flex items-center px-4 py-2 bg-white border border-blue-500 rounded-lg text-blue-500 cursor-pointer hover:bg-blue-50 transition-colors">
+                      <FiImage className="mr-2" />
+                      <span>Choose image</span>
+                      <input
+                        type="file"
+                        id="avatar"
+                        onChange={handleAvatarChange}
+                        accept="image/*"
+                        className="hidden"
+                      />
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">Max size: 1MB. JPG, PNG or GIF.</p>
+                  </div>
+                </div>
+              </div>
 
               <div className="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  disabled={isSubmitting}
                 >
-                  Save Changes
+                  {isSubmitting ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -168,16 +278,17 @@ export const UserProfile = () => {
                   <FiMail className="mr-3 text-blue-500" />
                   <div>
                     <p className="text-sm font-medium">Email</p>
-                    <div className="flex items-center">
-                      <p>{user.emails[0].address}</p>
-                      {!user.emails[0].verified && (
+                    <div className="flex items-center flex-wrap">
+                      <p>{user.emails?.[0]?.address || 'No email address'}</p>
+                      {user.emails?.[0] && !user.emails[0].verified && (
                         <div className="ml-2 flex items-center">
                           <span className="text-yellow-600 text-sm">(Unverified)</span>
                           <button
                             onClick={sendVerificationEmail}
-                            className="ml-2 text-blue-600 hover:text-blue-800 text-sm underline"
+                            disabled={isSubmitting}
+                            className="ml-2 text-blue-600 hover:text-blue-800 text-sm underline disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            Verify Now
+                            {isSubmitting ? 'Sending...' : 'Verify Now'}
                           </button>
                         </div>
                       )}
@@ -189,7 +300,9 @@ export const UserProfile = () => {
                   <FiCalendar className="mr-3 text-blue-500" />
                   <div>
                     <p className="text-sm font-medium">Member since</p>
-                    <p>{user.profile?.createdAt?.toLocaleDateString() || new Date(user.createdAt).toLocaleDateString() || 'Unknown'}</p>
+                    <p>{user.profile?.createdAt ? new Date(user.profile.createdAt).toLocaleDateString() : 
+                        user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 
+                        'Unknown'}</p>
                   </div>
                 </div>
               </div>

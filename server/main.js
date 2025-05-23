@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import { configureEmail } from '/imports/startup/server/email-config';
 import '/imports/api/users/methods';
+import '/imports/api/users/users';
 import '/imports/api/posts/posts';
 import '/imports/api/messages/messages';
 
